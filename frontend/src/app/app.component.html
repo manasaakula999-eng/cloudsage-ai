@@ -1,0 +1,114 @@
+<div class="app-shell">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="CloudSage AI home">
+      <span class="brand-mark">✳</span>
+      <span>cloudsage<span class="brand-light">.ai</span></span>
+    </a>
+    <div class="topbar-right">
+      <span class="open-source"><span class="status-dot"></span> Open source</span>
+      <a class="github-link" href="https://github.com/" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow"><span class="sparkle">✦</span> DOCUMENT INTELLIGENCE, REIMAGINED</div>
+      <h1>Your documents.<br><span>Clear answers.</span></h1>
+      <p class="hero-copy">Ask questions in plain language. CloudSage finds the relevant passages in your PDF and gives you an answer you can verify.</p>
+      <div class="tech-pills">
+        <span>Angular</span><span>Gemma</span><span>RAG</span><span>Google Cloud ready</span>
+      </div>
+    </section>
+
+    <section class="workspace" aria-label="Document chat workspace">
+      <aside class="document-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-kicker">YOUR WORKSPACE</p>
+            <h2>Knowledge source</h2>
+          </div>
+          <span class="file-icon">PDF</span>
+        </div>
+
+        <div class="upload-zone" [class.has-file]="filename">
+          <div class="upload-symbol">↑</div>
+          <h3>{{ filename ? 'Document ready' : 'Bring your knowledge' }}</h3>
+          <p>{{ filename || 'Upload a PDF to start asking questions about its content.' }}</p>
+          <label class="file-button">
+            Choose PDF
+            <input type="file" accept=".pdf,application/pdf" (change)="onFileSelected($event)" aria-label="Choose a PDF document">
+          </label>
+          <button class="primary-button full-width" type="button" (click)="uploadDocument()" [disabled]="!selectedFile || uploading">
+            {{ uploading ? 'Indexing document…' : 'Upload and index' }}
+          </button>
+          <p class="selected-file" *ngIf="selectedFile">Selected: {{ selectedFile.name }}</p>
+        </div>
+
+        <div class="document-status" *ngIf="filename">
+          <span class="status-check">✓</span>
+          <div class="status-details">
+            <strong>{{ filename }}</strong>
+            <span>{{ documentPages }} page(s) indexed</span>
+          </div>
+          <button class="icon-button" type="button" (click)="clearDocument()" [disabled]="clearing" aria-label="Clear current document" title="Clear document">×</button>
+        </div>
+
+        <div class="privacy-note">
+          <span>♧</span>
+          <p><strong>Local-first demo</strong><br>Your PDF is processed by the backend you run. The document index is stored in memory and clears when the backend restarts.</p>
+        </div>
+        <div class="panel-footer"><span class="status-dot"></span> Ready for your next question</div>
+      </aside>
+
+      <section class="chat-panel" aria-label="Ask your document">
+        <div class="chat-header">
+          <div class="assistant-avatar">✳</div>
+          <div class="assistant-title">
+            <h2>Document assistant</h2>
+            <p><span class="status-dot"></span> {{ filename ? 'Connected to your document' : 'Waiting for a document' }}</p>
+          </div>
+          <span class="model-label">RAG CHAT</span>
+        </div>
+
+        <div class="chat-messages" aria-live="polite">
+          <article class="message" *ngFor="let message of messages" [class.user-message]="message.role === 'user'">
+            <div class="message-avatar" *ngIf="message.role === 'assistant'">✳</div>
+            <div class="message-content">
+              <span class="message-author">{{ message.role === 'assistant' ? 'CLOUDSAGE' : 'YOU' }}</span>
+              <p class="message-text">{{ message.text }}</p>
+              <div class="source-list" *ngIf="message.sources?.length">
+                <div class="source-heading">SOURCES USED</div>
+                <details class="source-card" *ngFor="let source of message.sources; let i = index">
+                  <summary><span class="source-page">PAGE {{ source.page }}</span><span>Passage {{ i + 1 }}</span><span class="source-score">{{ (source.score * 100) | number:'1.0-0' }}% match</span></summary>
+                  <p>{{ source.text }}</p>
+                </details>
+              </div>
+              <span class="mode-label" *ngIf="message.mode">{{ message.mode }}</span>
+            </div>
+          </article>
+          <div class="thinking" *ngIf="asking"><span></span><span></span><span></span> Searching your document…</div>
+        </div>
+
+        <div class="chat-error" *ngIf="error" role="alert">{{ error }}</div>
+        <div class="chat-notice" *ngIf="notice" role="status">{{ notice }}</div>
+
+        <form class="composer" (ngSubmit)="askQuestion()">
+          <label class="sr-only" for="question">Ask a question about your PDF</label>
+          <textarea id="question" name="question" [(ngModel)]="question" rows="2" maxlength="2000"
+            placeholder="Ask something about your document…" [disabled]="asking || !filename"
+            (keydown)="onQuestionKeydown($event)"></textarea>
+          <div class="composer-bottom">
+            <span>Answers are grounded in retrieved passages · Enter to send</span>
+            <button class="send-button" type="submit" [disabled]="!question.trim() || asking || !filename" aria-label="Send question">↑</button>
+          </div>
+        </form>
+        <p class="disclaimer">AI can make mistakes. Check the source passages before relying on an answer.</p>
+      </section>
+    </section>
+    <footer class="footer">
+      <span>✳ CLOUDSAGE AI</span>
+      <span>Built for curious developers and open-source communities.</span>
+      <a href="https://github.com/" target="_blank" rel="noreferrer">Contribute ↗</a>
+    </footer>
+  </main>
+</div>
